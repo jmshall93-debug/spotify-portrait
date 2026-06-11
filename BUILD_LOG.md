@@ -26,6 +26,7 @@ Resumed: 2026-06-11 15:43:21 +01:00
 - Phase 4 sample/upload — bundled anonymized sample CSV, sidebar uploader, local/private fallback
 - Phase 5 README pass — run instructions, data flow, handover notes, portfolio copy
 - Phase 5 deploy prep — Streamlit config, GitHub web-upload instructions, private CSV exclusion notes
+- Phase 5 GitHub — repo live at jmshall93-debug/taste-map, initial push (private CSV excluded)
 
 Finished: *(when we're happy with the result)*
 Total active build time: 46m 45s + *(future resume segments TBD)*

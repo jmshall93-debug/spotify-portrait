@@ -73,7 +73,7 @@ git commit -m "Initial Taste Map portfolio demo"
 Create a new public GitHub repo (e.g. `taste-map`), then:
 
 ```powershell
-git remote add origin https://github.com/YOUR_USERNAME/taste-map.git
+git remote add origin https://github.com/jmshall93-debug/taste-map.git
 git branch -M main
 git push -u origin main
 ```
