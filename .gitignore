@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.streamlit/secrets.toml
+
+# Personal export — use sample_liked_songs.csv in repo (Phase 4)
+data/Liked_Songs.csv

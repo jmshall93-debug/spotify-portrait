@@ -1,0 +1,49 @@
+Track URI,Track Name,Album Name,Artist Name(s),Release Date,Duration (ms),Popularity,Explicit,Added By,Added At,Genres,Record Label
+spotify:track:sample000,Midnight Exchange,Low Light Dispatch,Cinder Room;Guest Signal,2014-03-14,240000,40,false,,2026-01-01T12:00:00Z,"organic house,deep house,downtempo",Sample Records
+spotify:track:sample001,Amber Relay,Quiet Circuits,Mara Vale,2018-09-21,257000,34,false,,2026-01-02T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample002,Harbour Static,Blue Rooms,North Meridian,2012-06-08,274000,28,false,,2026-01-03T12:00:00Z,"progressive house,deep house",Sample Records
+spotify:track:sample003,Afterimage Market,Night Index,Sable Drift,2021-04-16,291000,23,false,,2026-01-04T12:00:00Z,"melodic techno,organic house",Sample Records
+spotify:track:sample004,Glass Courtyard,Pale Signals,Elias Venn,2016-11-04,308000,33,false,,2026-01-05T12:00:00Z,"downtempo,trip hop",Sample Records
+spotify:track:sample005,Soft Machines,Interior Weather,The Low Archive,2009-02-10,325000,16,false,,2026-01-06T12:00:00Z,"trip hop,idm,downtempo",Sample Records
+spotify:track:sample006,Heat Map,Ember Systems,Juniper Static,2020-08-28,342000,26,false,,2026-01-07T12:00:00Z,"melodic house,progressive house",Sample Records
+spotify:track:sample007,Subterranean Light,Below The City,Orson Vale;Guest Signal,1998-05-19,359000,14,false,,2026-01-08T12:00:00Z,"deep house,progressive house",Sample Records
+spotify:track:sample008,Signal Bath,Slow Transit,Mica Raye,2017-01-27,376000,41,false,,2026-01-09T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample009,Copper Distance,Late Ledger,Nocturne Bureau,2019-10-11,240000,26,false,,2026-01-10T12:00:00Z,"progressive house,melodic techno",Sample Records
+spotify:track:sample010,Quiet Antenna,Small Hours,Hollow Atlas,2011-12-02,257000,17,false,,2026-01-11T12:00:00Z,"dub techno,minimal techno",Sample Records
+spotify:track:sample011,Basin Theory,Wet Geometry,Aster Fold,2015-07-31,274000,32,false,,2026-01-12T12:00:00Z,"lo-fi house,jazz house",Sample Records
+spotify:track:sample012,Smoke Calendar,Days Under Glass,Vera North,2022-02-18,291000,21,false,,2026-01-13T12:00:00Z,"organic house,downtempo",Sample Records
+spotify:track:sample013,Civic Mirage,Side Streets,Perrenial,2004-09-03,308000,30,false,,2026-01-14T12:00:00Z,"nu disco,disco house",Sample Records
+spotify:track:sample014,Low Ceiling,Dusk Manual,The Orchard Field;Guest Signal,2013-05-24,325000,19,false,,2026-01-15T12:00:00Z,"downtempo,lo-fi house",Sample Records
+spotify:track:sample015,Midnight Exchange 2,Low Light Dispatch,Cinder Room,2015-03-14,342000,40,false,,2026-01-16T12:00:00Z,"organic house,deep house,downtempo",Sample Records
+spotify:track:sample016,Amber Relay 2,Quiet Circuits,Mara Vale,2019-09-21,359000,34,false,,2026-01-17T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample017,Harbour Static 2,Blue Rooms,North Meridian,2013-06-08,376000,28,false,,2026-01-18T12:00:00Z,"progressive house,deep house",Sample Records
+spotify:track:sample018,Afterimage Market 2,Night Index,Sable Drift,2022-04-16,240000,23,false,,2026-01-19T12:00:00Z,"melodic techno,organic house",Sample Records
+spotify:track:sample019,Glass Courtyard 2,Pale Signals,Elias Venn,2017-11-04,257000,33,false,,2026-01-20T12:00:00Z,"downtempo,trip hop",Sample Records
+spotify:track:sample020,Soft Machines 2,Interior Weather,The Low Archive,2010-02-10,274000,16,false,,2026-01-21T12:00:00Z,"trip hop,idm,downtempo",Sample Records
+spotify:track:sample021,Heat Map 2,Ember Systems,Juniper Static;Guest Signal,2021-08-28,291000,26,false,,2026-01-22T12:00:00Z,"melodic house,progressive house",Sample Records
+spotify:track:sample022,Subterranean Light 2,Below The City,Orson Vale,1999-05-19,308000,14,false,,2026-01-23T12:00:00Z,"deep house,progressive house",Sample Records
+spotify:track:sample023,Signal Bath 2,Slow Transit,Mica Raye,2018-01-27,325000,41,false,,2026-01-24T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample024,Copper Distance 2,Late Ledger,Nocturne Bureau,2020-10-11,342000,26,false,,2026-01-25T12:00:00Z,"progressive house,melodic techno",Sample Records
+spotify:track:sample025,Quiet Antenna 2,Small Hours,Hollow Atlas,2012-12-02,359000,17,false,,2026-01-26T12:00:00Z,"dub techno,minimal techno",Sample Records
+spotify:track:sample026,Basin Theory 2,Wet Geometry,Aster Fold,2016-07-31,376000,32,false,,2026-01-27T12:00:00Z,"lo-fi house,jazz house",Sample Records
+spotify:track:sample027,Smoke Calendar 2,Days Under Glass,Vera North,2023-02-18,240000,21,false,,2026-01-28T12:00:00Z,"organic house,downtempo",Sample Records
+spotify:track:sample028,Civic Mirage 2,Side Streets,Perrenial;Guest Signal,2005-09-03,257000,30,false,,2026-01-01T12:00:00Z,"nu disco,disco house",Sample Records
+spotify:track:sample029,Low Ceiling 2,Dusk Manual,The Orchard Field,2014-05-24,274000,19,false,,2026-01-02T12:00:00Z,"downtempo,lo-fi house",Sample Records
+spotify:track:sample030,Midnight Exchange 3,Low Light Dispatch,Cinder Room,2016-03-14,291000,40,false,,2026-01-03T12:00:00Z,"organic house,deep house,downtempo",Sample Records
+spotify:track:sample031,Amber Relay 3,Quiet Circuits,Mara Vale,2020-09-21,308000,34,false,,2026-01-04T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample032,Harbour Static 3,Blue Rooms,North Meridian,2014-06-08,325000,28,false,,2026-01-05T12:00:00Z,"progressive house,deep house",Sample Records
+spotify:track:sample033,Afterimage Market 3,Night Index,Sable Drift,2023-04-16,342000,23,false,,2026-01-06T12:00:00Z,"melodic techno,organic house",Sample Records
+spotify:track:sample034,Glass Courtyard 3,Pale Signals,Elias Venn,2018-11-04,359000,33,false,,2026-01-07T12:00:00Z,"downtempo,trip hop",Sample Records
+spotify:track:sample035,Soft Machines 3,Interior Weather,The Low Archive;Guest Signal,2011-02-10,376000,16,false,,2026-01-08T12:00:00Z,"trip hop,idm,downtempo",Sample Records
+spotify:track:sample036,Heat Map 3,Ember Systems,Juniper Static,2022-08-28,240000,26,false,,2026-01-09T12:00:00Z,"melodic house,progressive house",Sample Records
+spotify:track:sample037,Subterranean Light 3,Below The City,Orson Vale,2000-05-19,257000,14,false,,2026-01-10T12:00:00Z,"deep house,progressive house",Sample Records
+spotify:track:sample038,Signal Bath 3,Slow Transit,Mica Raye,2019-01-27,274000,41,false,,2026-01-11T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample039,Copper Distance 3,Late Ledger,Nocturne Bureau,2021-10-11,291000,26,false,,2026-01-12T12:00:00Z,"progressive house,melodic techno",Sample Records
+spotify:track:sample040,Quiet Antenna 3,Small Hours,Hollow Atlas,2013-12-02,308000,17,false,,2026-01-13T12:00:00Z,"dub techno,minimal techno",Sample Records
+spotify:track:sample041,Basin Theory 3,Wet Geometry,Aster Fold,2017-07-31,325000,32,false,,2026-01-14T12:00:00Z,"lo-fi house,jazz house",Sample Records
+spotify:track:sample042,Smoke Calendar 3,Days Under Glass,Vera North;Guest Signal,2024-02-18,342000,21,false,,2026-01-15T12:00:00Z,"organic house,downtempo",Sample Records
+spotify:track:sample043,Civic Mirage 3,Side Streets,Perrenial,2006-09-03,359000,30,false,,2026-01-16T12:00:00Z,"nu disco,disco house",Sample Records
+spotify:track:sample044,Low Ceiling 3,Dusk Manual,The Orchard Field,2015-05-24,376000,19,false,,2026-01-17T12:00:00Z,"downtempo,lo-fi house",Sample Records
+spotify:track:sample045,Midnight Exchange 4,Low Light Dispatch,Cinder Room,2017-03-14,240000,40,false,,2026-01-18T12:00:00Z,"organic house,deep house,downtempo",Sample Records
+spotify:track:sample046,Amber Relay 4,Quiet Circuits,Mara Vale,2021-09-21,257000,34,false,,2026-01-19T12:00:00Z,"organic house,melodic house",Sample Records
+spotify:track:sample047,Harbour Static 4,Blue Rooms,North Meridian,2015-06-08,274000,28,false,,2026-01-20T12:00:00Z,"progressive house,deep house",Sample Records
