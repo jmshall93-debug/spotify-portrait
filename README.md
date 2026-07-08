@@ -14,7 +14,7 @@ Upload an [Exportify](https://exportify.net) CSV and get a one-page portrait of 
 
 - Genre composition treemap
 - Release-era histogram and top artists
-- Mood fingerprint (energy, danceability, valence, tempo)
+- Mood fingerprint (energy, danceability, positivity, tempo)
 - Editorial headline and interpretation from your stats
 - Playlist picker or CSV upload
 - Optional AI portrait via Groq or local Ollama
@@ -23,9 +23,13 @@ Upload an [Exportify](https://exportify.net) CSV and get a one-page portrait of 
 
 ## Example Dashboard
 
-### Charts
+### Composition
 
-![Charts](assets/charts.png)
+![Composition](assets/composition.png)
+
+### Structure
+
+![Structure](assets/structure.png)
 
 ### Full walkthrough
 
