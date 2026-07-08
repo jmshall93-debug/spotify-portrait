@@ -1,78 +1,81 @@
 # Spotify Portrait
 
-Upload a Spotify playlist export and get a one-page portrait of what you listen to - genre weight, release-era shape, artist concentration, and how deep your cuts run.
+> Editorial listening portrait from your Spotify library.
 
-Small portfolio build: runs locally or on Streamlit Cloud, sample data included, no private tracks in the repo.
+**[Live demo](https://taste-map-jbjx3umnykyhbgutasmqr6.streamlit.app/)** · [Source on GitHub](https://github.com/jmshall93-debug/spotify-portrait)
 
-## What's in the report
+Upload an [Exportify](https://exportify.net) CSV and get a one-page portrait of what you listen to - genre weight, release-era shape, artist concentration, and how deep your cuts run.
 
-- Genre treemap, decade bars, top artists
-- Mood fingerprint (energy, danceability, valence, tempo) when the export includes audio features
-- Headline and short interpretation from your stats - works offline, no API required
-- Optional AI rewrite via Groq or local Ollama
+![Dashboard](assets/hero.png)
 
-## How it works
+---
+
+## Features
+
+- Genre composition treemap
+- Release-era histogram and top artists
+- Mood fingerprint (energy, danceability, valence, tempo)
+- Editorial headline and interpretation from your stats
+- Playlist picker or CSV upload
+- Optional AI portrait via Groq or local Ollama
+
+---
+
+## Example Dashboard
+
+### Charts
+
+![Charts](assets/charts.png)
+
+### Full walkthrough
+
+![Demo](assets/demo.gif)
+
+---
+
+## Tech Stack
+
+- Python
+- Streamlit
+- Plotly
+- Pandas
+
+---
+
+## Architecture
 
 ```text
-CSV -> parse.py -> taste profile + brief -> app.py (Streamlit + Plotly)
+Spotify CSV
+      |
+      v
+parse.py
+      |
+      v
+Taste Profile
+      |
+      v
+Narrative Generator
+      |
+      v
+Streamlit Dashboard
 ```
 
-`parse.py` normalises Exportify columns, splits genres and artists, buckets years, and scores popularity. `narrate.py` turns the brief into copy. `app.py` renders the page.
+---
 
-## Run locally
-
-Double-click `run.bat`, or from PowerShell:
+## Running locally
 
 ```powershell
-cd "C:\AI dreams\business\spotify-portrait"
+git clone https://github.com/jmshall93-debug/spotify-portrait.git
+cd spotify-portrait
+py -m venv .venv
+.\.venv\Scripts\pip install -r requirements.txt
 .\run.bat
 ```
 
-Opens at **http://localhost:8501**.
+Opens **http://localhost:8501** in your browser.
 
-First-time setup:
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
+---
 
 ## Your data
 
-| File | Purpose |
-|---|---|
-| `data/sample_liked_songs.csv` | Bundled demo - safe to commit |
-| `data/Liked_Songs.csv` | Your private export - gitignored |
-| `data/playlists/*.csv` | Local multi-playlist folder - gitignored |
-
-Load order: **upload on the main page** -> playlist picker -> sample CSV.
-
-Useful Exportify columns: `Track Name`, `Artist Name(s)`, `Release Date`, `Popularity`, `Genres`. Audio feature columns improve the mood strip.
-
-## Optional AI portrait
-
-Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and set one of:
-
-- `GROQ_API_KEY` - free tier at [console.groq.com](https://console.groq.com)
-- `OLLAMA_MODEL` - e.g. `llama3.2` with [Ollama](https://ollama.com) running locally
-
-Only the stat brief goes to the model, not raw track lists. No key -> template copy.
-
-## Deploy on Streamlit Community Cloud
-
-Repo: [github.com/jmshall93-debug/spotify-portrait](https://github.com/jmshall93-debug/spotify-portrait)
-
-1. Push the latest `main` branch to GitHub.
-2. Open [share.streamlit.io](https://share.streamlit.io) -> **Create app**.
-3. Select the repo, branch **`main`**, main file path **`app.py`**.
-4. Deploy. The live app loads the bundled sample CSV; visitors can upload their own export from the main page.
-
-For AI portrait on Cloud: app **Settings -> Secrets** - same keys as `secrets.toml`.
-
-## Portfolio blurb
-
-**Spotify Portrait** - visual listening portrait from a Spotify/Exportify CSV. Genre treemap, era shape, artist concentration, deep-cuts index. Python, Streamlit, Plotly. Sample data and source included.
-
-## Handover
-
-You get full source, demo data, and run instructions. Private exports stay local. The parsing layer is separate from the UI, so charts, copy, or branding can change without touching the core logic.
+Use an Exportify export with track name, artist, release date, popularity, and genres. Audio feature columns unlock the mood fingerprint. Bundled sample data is included; private exports stay local.

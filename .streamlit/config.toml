@@ -5,11 +5,5 @@ backgroundColor = "#0e0c0a"
 secondaryBackgroundColor = "#161310"
 textColor = "#fff8f0"
 
-[server]
-headless = true
-port = 8501
-address = "localhost"
-
 [browser]
-serverAddress = "localhost"
 gatherUsageStats = false

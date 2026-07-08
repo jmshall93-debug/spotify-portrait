@@ -37,3 +37,36 @@ Timestamp log from the assistant summed to 2h 48m; that overcounts because the f
 - AI portrait on Cloud (Groq secrets)
 - Custom Streamlit URL
 - Compare-two-playlists (v2)
+
+## Data spec
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `data/sample_liked_songs.csv` | Bundled demo - safe to commit |
+| `data/Liked_Songs.csv` | Your private export - gitignored |
+| `data/playlists/*.csv` | Local multi-playlist folder - gitignored |
+
+Load order: upload on the main page -> playlist picker -> sample CSV.
+
+Useful Exportify columns: `Track Name`, `Artist Name(s)`, `Release Date`, `Popularity`, `Genres`. Audio feature columns improve the mood strip.
+
+### Optional AI portrait
+
+Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and set one of:
+
+- `GROQ_API_KEY` - free tier at [console.groq.com](https://console.groq.com)
+- `OLLAMA_MODEL` - e.g. `llama3.2` with [Ollama](https://ollama.com) running locally
+
+Only the stat brief goes to the model, not raw track lists. No key -> template copy.
+
+For AI portrait on Cloud: app **Settings -> Secrets** - same keys as `secrets.toml`.
+
+### How it works (dev)
+
+```text
+CSV -> parse.py -> taste profile + brief -> app.py (Streamlit + Plotly)
+```
+
+`parse.py` normalises Exportify columns, splits genres and artists, buckets years, and scores popularity. `narrate.py` turns the brief into copy. `app.py` renders the page.
