@@ -1,4 +1,4 @@
-# Taste Map — build log
+# Spotify Portrait - build log
 
 **Status:** Finished — small-project benchmark (v1.0)  
 **Started:** 2026-06-06 23:05:24 +01:00  
@@ -28,7 +28,7 @@ Timestamp log from the assistant summed to 2h 48m; that overcounts because the f
 
 ## Links
 
-- Repo: https://github.com/jmshall93-debug/taste-map
+- Repo: https://github.com/jmshall93-debug/spotify-portrait
 - Live: https://taste-map-jbjx3umnykyhbgutasmqr6.streamlit.app/
 
 ## Later (optional)

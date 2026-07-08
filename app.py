@@ -1,4 +1,4 @@
-"""Taste Map — Streamlit UI."""
+"""Spotify Portrait - Streamlit UI."""
 
 import importlib
 import json
@@ -549,7 +549,7 @@ def top_artists_bar(profile, limit: int = 10):
 
 
 st.set_page_config(
-    page_title="Taste Map",
+    page_title="Spotify Portrait",
     layout="wide",
     page_icon="♪",
     initial_sidebar_state="collapsed",
@@ -582,7 +582,7 @@ if library_summary:
     )
 
 st.markdown(
-    f'<p class="hero-caption">Taste Map / {source_label}{ai_note}</p>',
+    f'<p class="hero-caption">Spotify Portrait / {source_label}{ai_note}</p>',
     unsafe_allow_html=True,
 )
 st.markdown(f'<p class="hero-title">{portrait.title}</p>', unsafe_allow_html=True)
@@ -623,6 +623,6 @@ with right:
 st.markdown(
     '<p class="footer-note">Deep-cuts index = 100 minus average Spotify popularity '
     "(higher means deeper cuts). Built as a portfolio demo — "
-    '<a href="https://github.com/jmshall93-debug/taste-map" style="color: #f97316;">source on GitHub</a>.</p>',
+    '<a href="https://github.com/jmshall93-debug/spotify-portrait" style="color: #f97316;">source on GitHub</a>.</p>',
     unsafe_allow_html=True,
 )

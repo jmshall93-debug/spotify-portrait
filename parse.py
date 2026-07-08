@@ -1,4 +1,4 @@
-"""Load Exportify-style Spotify CSV exports and derive taste-map stats."""
+"""Load Exportify-style Spotify CSV exports and derive Spotify portrait stats."""
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 @echo off
-title Taste Map
+title Spotify Portrait
 cd /d "%~dp0"
 
 if not exist ".venv\Scripts\python.exe" (
@@ -10,7 +10,7 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 echo.
-echo  Taste Map  ^>  http://localhost:8501
+echo  Spotify Portrait  ^>  http://localhost:8501
 echo  Close this window to stop the app.
 echo.
 
