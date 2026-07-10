@@ -31,6 +31,9 @@ SURFACE = "#161310"
 BORDER = "#352e26"
 TEXT = "#fff8f0"
 MUTED = "#a08b78"
+BODY_TEXT = "#d4c8bc"
+STAT_LABEL = "#b8a898"
+BORDER_STRONG = "#4a4038"
 ACCENT = "#ea580c"
 ACCENT_DEEP = "#7c2d12"
 ACCENT_GLOW = "#f97316"
@@ -39,21 +42,34 @@ PEACH = "#f0dcc8"
 CREAM = "#fff8f0"
 BAR_LOW = "#431407"
 BAR_HIGH = "#ea580c"
+# Interleaved: ember → petrol → slate → plum — adjacent cells get different families.
 GENRE_PALETTE = [
     "#7c2d12",
+    "#123338",
+    "#2b3645",
+    "#34243a",
     "#9a3412",
+    "#172a2f",
+    "#1f2937",
+    "#4b2a3d",
+    "#a0522d",
+    "#243b35",
+    "#162235",
+    "#5c3d4a",
     "#bf4f1f",
-    "#d4622a",
-    "#ea580c",
-    "#f97316",
+    "#1d3f45",
+    "#3d4451",
+    "#431407",
+    "#2f3f3a",
 ]
+OTHER_COLOR = "#1f2937"
 
 PAGE_CSS = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 .stApp {{
     background:
-        radial-gradient(ellipse 90% 55% at 18% -15%, rgba(234, 88, 12, 0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 55% at 18% -15%, rgba(234, 88, 12, 0.06) 0%, transparent 55%),
         {BG};
     color: {TEXT};
 }}
@@ -108,7 +124,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     max-width: 50rem;
 }}
 .interpretation {{
-    color: {MUTED};
+    color: {BODY_TEXT};
     font-size: 0.98rem;
     line-height: 1.65;
     max-width: 52rem;
@@ -163,13 +179,13 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     .stat-value {{ font-size: 1rem; }}
 }}
 .stat {{
-    background: rgba(20, 18, 16, 0.92);
-    border: 1px solid {BORDER};
+    background: {SURFACE};
+    border: 1px solid {BORDER_STRONG};
     border-radius: 10px;
     padding: 0.75rem 0.9rem;
 }}
 .stat-label {{
-    color: {MUTED};
+    color: {STAT_LABEL};
     font-size: 0.58rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
@@ -185,7 +201,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.22em;
-    color: {ACCENT_GLOW};
+    color: {AMBER};
     margin-bottom: 0.45rem;
 }}
 .section-label {{
@@ -463,7 +479,12 @@ def genre_treemap(profile):
             genres.append("Other")
             counts.append(other_count)
 
-    colors = [GENRE_PALETTE[i % len(GENRE_PALETTE)] for i in range(len(genres))]
+    colors = []
+    for i, genre in enumerate(genres):
+        if genre == "Other":
+            colors.append(OTHER_COLOR)
+        else:
+            colors.append(GENRE_PALETTE[i % len(GENRE_PALETTE)])
 
     fig = go.Figure(
         go.Treemap(
