@@ -23,9 +23,9 @@ Upload an [Exportify](https://exportify.net) CSV and get a one-page portrait of 
 
 ## Example Dashboard
 
-### Composition
+### Top genres
 
-![Composition](assets/composition.png)
+![Top genres](assets/composition.png)
 
 ### Structure
 

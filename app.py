@@ -25,23 +25,25 @@ CHART_HEIGHT = 400
 SMALL_CHART_HEIGHT = 360
 STRUCTURE_CHART_HEIGHT = 280
 
-# Editorial Ember: orange heat on warm charcoal, amber for structure.
-BG = "#0e0c0a"
-SURFACE = "#161310"
-BORDER = "#352e26"
-TEXT = "#fff8f0"
-MUTED = "#a08b78"
-BODY_TEXT = "#d4c8bc"
-STAT_LABEL = "#b8a898"
-BORDER_STRONG = "#4a4038"
+# Neutral charcoal base; ember reserved for sparse accents.
+BG = "#101214"
+SURFACE = "#181b1f"
+SURFACE_RAISED = "#1f2328"
+BORDER = "#2a3038"
+BORDER_STRONG = "#3a424d"
+TEXT = "#f4f2ef"
+MUTED = "#9aa3ad"
+BODY_TEXT = "#c8cdd4"
+STAT_LABEL = "#8f98a3"
+CHART_AXIS = "#8f98a3"
+CHART_TITLE = "#b8c0c8"
 ACCENT = "#ea580c"
-ACCENT_DEEP = "#7c2d12"
 ACCENT_GLOW = "#f97316"
 AMBER = "#c9925a"
-PEACH = "#f0dcc8"
-CREAM = "#fff8f0"
-BAR_LOW = "#431407"
-BAR_HIGH = "#ea580c"
+CREAM = "#f4f2ef"
+CHART_LOW = "#162235"
+CHART_HIGH = "#2f5d62"
+CHART_HIGHLIGHT = "#c9925a"
 # Interleaved: ember → petrol → slate → plum — adjacent cells get different families.
 GENRE_PALETTE = [
     "#7c2d12",
@@ -62,16 +64,30 @@ GENRE_PALETTE = [
     "#431407",
     "#2f3f3a",
 ]
-OTHER_COLOR = "#1f2937"
 
 PAGE_CSS = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 .stApp {{
     background:
-        radial-gradient(ellipse 90% 55% at 18% -15%, rgba(234, 88, 12, 0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 55% at 18% -15%, rgba(201, 146, 90, 0.04) 0%, transparent 55%),
         {BG};
     color: {TEXT};
+}}
+[data-testid="stSelectbox"] label,
+[data-testid="stFileUploader"] label,
+[data-testid="stCheckbox"] label {{
+    color: {BODY_TEXT} !important;
+    font-size: 0.82rem !important;
+}}
+[data-testid="stSelectbox"] > div > div {{
+    background: {SURFACE_RAISED} !important;
+    border-color: {BORDER_STRONG} !important;
+    color: {TEXT} !important;
+}}
+[data-testid="stFileUploaderDropzone"] {{
+    background: {SURFACE_RAISED} !important;
+    border-color: {BORDER_STRONG} !important;
 }}
 .block-container {{
     font-family: Inter, Segoe UI, system-ui, sans-serif;
@@ -89,21 +105,22 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     margin: 0.35rem 0 1rem 0;
 }}
 .library-summary {{
-    color: {MUTED};
-    font-size: 0.88rem;
+    color: {BODY_TEXT};
+    font-size: 0.9rem;
     line-height: 1.6;
     max-width: 52rem;
     margin: 0 0 1.35rem 0;
-    padding: 0.75rem 0.95rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid {BORDER};
     border-left: 2px solid {AMBER};
-    background: rgba(22, 19, 16, 0.55);
-    border-radius: 0 6px 6px 0;
+    background: {SURFACE_RAISED};
+    border-radius: 0 8px 8px 0;
 }}
 .library-summary-label {{
     font-size: 0.58rem;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: {AMBER};
+    color: {STAT_LABEL};
     margin-bottom: 0.35rem;
 }}
 
@@ -116,19 +133,24 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
 }}
 .hero-label {{
     font-family: Inter, Segoe UI, system-ui, sans-serif;
-    font-size: 1.05rem;
-    font-weight: 400;
+    font-size: 1.08rem;
+    font-weight: 500;
     line-height: 1.45;
-    color: {PEACH};
+    color: {TEXT};
     margin: 0 0 0.8rem 0;
     max-width: 50rem;
 }}
 .interpretation {{
     color: {BODY_TEXT};
-    font-size: 0.98rem;
+    font-size: 1rem;
     line-height: 1.65;
     max-width: 52rem;
     margin: 0 0 1.75rem 0;
+}}
+.chart-note {{
+    color: {MUTED};
+    font-size: 0.78rem;
+    margin: -0.35rem 0 0.65rem 0;
 }}
 .stat-strip {{
     display: grid;
@@ -208,7 +230,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    color: {AMBER};
+    color: {STAT_LABEL};
     margin: 1.75rem 0 0.75rem 0;
 }}
 [data-testid="stPlotlyChart"] {{
@@ -234,7 +256,7 @@ CHART_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=TEXT, size=12, family="Segoe UI, system-ui, sans-serif"),
-    title=dict(font=dict(size=13, color=ACCENT), x=0, xanchor="left"),
+    title=dict(font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"),
 )
 
 
@@ -246,8 +268,8 @@ def _apply_axes(fig, show_y_grid=False):
     fig.update_xaxes(
         showgrid=False,
         linecolor=BORDER,
-        tickcolor=MUTED,
-        tickfont=dict(color=MUTED, size=10),
+        tickcolor=CHART_AXIS,
+        tickfont=dict(color=CHART_AXIS, size=10),
     )
     fig.update_yaxes(
         showgrid=show_y_grid,
@@ -255,8 +277,8 @@ def _apply_axes(fig, show_y_grid=False):
         gridwidth=0.5,
         zeroline=False,
         linecolor=BORDER,
-        tickcolor=MUTED,
-        tickfont=dict(color=MUTED, size=10),
+        tickcolor=CHART_AXIS,
+        tickfont=dict(color=CHART_AXIS, size=10),
     )
     return fig
 
@@ -284,6 +306,21 @@ def _bar_fill_colors(values: list[int] | list[float], low: str, high: str) -> li
     if vmax == vmin:
         return [high] * len(values)
     return [_lerp_hex(low, high, (v - vmin) / (vmax - vmin)) for v in values]
+
+
+def _bar_fill_with_highlight(
+    values: list[int] | list[float],
+    low: str,
+    high: str,
+    highlight: str,
+) -> list[str]:
+    """Cool ramp with one amber bar on the maximum value."""
+    colors = _bar_fill_colors(values, low, high)
+    if not colors:
+        return colors
+    peak = values.index(max(values))
+    colors[peak] = highlight
+    return colors
 
 
 def _profile_attr(profile, name: str):
@@ -473,18 +510,7 @@ def genre_treemap(profile):
     top = weights.head(TOP_GENRES)
     genres = top.index.tolist()
     counts = [int(v) for v in top.values.tolist()]
-    if len(weights) > TOP_GENRES:
-        other_count = int(weights.iloc[TOP_GENRES:].sum())
-        if other_count > 0:
-            genres.append("Other")
-            counts.append(other_count)
-
-    colors = []
-    for i, genre in enumerate(genres):
-        if genre == "Other":
-            colors.append(OTHER_COLOR)
-        else:
-            colors.append(GENRE_PALETTE[i % len(GENRE_PALETTE)])
+    colors = [GENRE_PALETTE[i % len(GENRE_PALETTE)] for i in range(len(genres))]
 
     fig = go.Figure(
         go.Treemap(
@@ -520,7 +546,10 @@ def era_bar(profile):
         go.Bar(
             x=buckets.index.tolist(),
             y=values,
-            marker=dict(color=_bar_fill_colors(values, BAR_LOW, ACCENT), line=dict(width=0)),
+            marker=dict(
+                color=_bar_fill_with_highlight(values, CHART_LOW, CHART_HIGH, CHART_HIGHLIGHT),
+                line=dict(width=0),
+            ),
         )
     )
     fig.update_layout(
@@ -533,22 +562,23 @@ def era_bar(profile):
             yaxis_title=None,
         )
     )
-    fig.update_layout(title=dict(text="When the music was made", font=dict(size=13, color=MUTED), x=0, xanchor="left"))
+    fig.update_layout(title=dict(text="When the music was made", font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"))
     return _apply_axes(fig)
 
 
 def top_artists_bar(profile, limit: int = 8):
-    artists = profile.top_artists.head(limit)
+    artists = profile.top_artists.head(limit).sort_values(ascending=True)
     if artists.empty:
         return None
 
     values = artists.values.tolist()
+    colors = _bar_fill_with_highlight(values, CHART_LOW, CHART_HIGH, CHART_HIGHLIGHT)
     fig = go.Figure(
         go.Bar(
             x=values,
             y=artists.index.tolist(),
             orientation="h",
-            marker=dict(color=_bar_fill_colors(values, BAR_LOW, ACCENT), line=dict(width=0)),
+            marker=dict(color=colors, line=dict(width=0)),
         )
     )
     fig.update_layout(
@@ -557,10 +587,10 @@ def top_artists_bar(profile, limit: int = 8):
             margin=dict(t=40, l=12, r=16, b=12),
             paper_bgcolor=SURFACE,
             plot_bgcolor=SURFACE,
-            yaxis=dict(categoryorder="total ascending", automargin=True),
         )
     )
-    fig.update_layout(title=dict(text=f"Top {limit} artists", font=dict(size=13, color=MUTED), x=0, xanchor="left"))
+    fig.update_layout(title=dict(text=f"Top {limit} artists", font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"))
+    fig.update_layout(yaxis=dict(automargin=True))
     return _apply_axes(fig)
 
 
@@ -607,7 +637,12 @@ st.markdown(f'<p class="interpretation">{portrait.interpretation}</p>', unsafe_a
 st.markdown(_stat_strip(profile), unsafe_allow_html=True)
 st.markdown(_mood_strip(profile), unsafe_allow_html=True)
 
-st.markdown('<p class="section-label">Composition</p>', unsafe_allow_html=True)
+genre_total = len(profile.genre_weights)
+st.markdown('<p class="section-label">Top genres</p>', unsafe_allow_html=True)
+st.markdown(
+    f'<p class="chart-note">Top {min(TOP_GENRES, genre_total)} of {genre_total} tagged genres</p>',
+    unsafe_allow_html=True,
+)
 genre_fig = genre_treemap(profile)
 if genre_fig is None:
     st.warning("No genre data in this export.")
