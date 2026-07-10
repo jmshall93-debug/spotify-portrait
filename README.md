@@ -31,9 +31,9 @@ Upload an [Exportify](https://exportify.net) CSV and get a one-page portrait of 
 
 ![Structure](assets/structure.png)
 
-### Full walkthrough
+### Full report
 
-![Demo](assets/demo.gif)
+![Full report](assets/full-report.png)
 
 ---
 
