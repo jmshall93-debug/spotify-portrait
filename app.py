@@ -101,51 +101,56 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
 }}
 .control-hint {{
     color: {MUTED};
-    font-size: 0.78rem;
-    margin: 0.35rem 0 1rem 0;
+    font-size: 0.76rem;
+    margin: 0.25rem 0 0.85rem 0;
 }}
-.library-summary {{
-    color: {BODY_TEXT};
-    font-size: 0.9rem;
-    line-height: 1.6;
+.library-context {{
+    color: {MUTED};
+    font-size: 0.84rem;
+    line-height: 1.55;
     max-width: 52rem;
-    margin: 0 0 1.35rem 0;
-    padding: 0.85rem 1rem;
+    margin: 0.5rem 0 1.25rem 0;
+    padding: 0.65rem 0.85rem;
     border: 1px solid {BORDER};
-    border-left: 2px solid {AMBER};
-    background: {SURFACE_RAISED};
-    border-radius: 0 8px 8px 0;
+    background: rgba(24, 27, 31, 0.55);
+    border-radius: 8px;
 }}
-.library-summary-label {{
+.library-context-label {{
     font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     color: {STAT_LABEL};
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.3rem;
 }}
-
+.hero-editorial {{
+    border-left: 3px solid {AMBER};
+    padding: 0.1rem 0 0.1rem 1rem;
+    margin: 0;
+}}
 .hero-title {{
-    font-size: 2.55rem;
-    font-weight: 600;
-    letter-spacing: -0.045em;
-    margin: 0 0 0.35rem 0;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.12;
+    margin: 0 0 0.75rem 0;
     color: {TEXT};
+    max-width: 18ch;
 }}
 .hero-label {{
     font-family: Inter, Segoe UI, system-ui, sans-serif;
-    font-size: 1.08rem;
+    font-size: 1.05rem;
     font-weight: 500;
     line-height: 1.45;
     color: {TEXT};
-    margin: 0 0 0.8rem 0;
-    max-width: 50rem;
+    margin: 0 0 0.65rem 0;
+    max-width: 38rem;
 }}
 .interpretation {{
-    color: {BODY_TEXT};
-    font-size: 1rem;
+    color: {MUTED};
+    font-size: 0.95rem;
     line-height: 1.65;
-    max-width: 52rem;
-    margin: 0 0 1.75rem 0;
+    max-width: 38rem;
+    margin: 0;
 }}
 .chart-note {{
     color: {MUTED};
@@ -156,7 +161,17 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.55rem;
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 1.25rem 0;
+}}
+.stat-grid {{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+    margin: 0;
+}}
+.hero-row {{
+    align-items: start;
+    margin-bottom: 0.35rem;
 }}
 @media (max-width: 720px) {{
     .block-container {{
@@ -165,7 +180,8 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
         padding-right: 0.85rem;
     }}
     .stat-strip {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-    .hero-title {{ font-size: 1.75rem; letter-spacing: -0.03em; }}
+    .stat-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+    .hero-title {{ font-size: 1.85rem; letter-spacing: -0.03em; max-width: none; }}
     .hero-label {{ font-size: 0.95rem; margin-bottom: 0.55rem; }}
     .interpretation {{ font-size: 0.9rem; line-height: 1.55; margin-bottom: 1rem; }}
     .stat-value {{ font-size: 1.15rem; }}
@@ -365,27 +381,38 @@ def _mood_strip(profile) -> str:
     """
 
 
-def _stat_strip(profile) -> str:
-    return f"""
-    <div class="stat-strip" style="margin-top: 0.25rem;">
-        <div class="stat">
-            <div class="stat-label">Tracks mapped</div>
-            <div class="stat-value">{profile.track_count}</div>
-        </div>
-        <div class="stat">
-            <div class="stat-label">Avg popularity</div>
-            <div class="stat-value">{profile.avg_popularity}</div>
-        </div>
-        <div class="stat">
-            <div class="stat-label">Artists touched</div>
-            <div class="stat-value">{profile.artist_count}</div>
-        </div>
-        <div class="stat">
-            <div class="stat-label">Deep-cuts index</div>
-            <div class="stat-value" style="color: {ACCENT_GLOW};">{profile.obscurity_score}</div>
-        </div>
-    </div>
-    """
+def _stat_card(label: str, value: str, accent: bool = False) -> str:
+    value_style = f' style="color: {ACCENT_GLOW};"' if accent else ""
+    return (
+        '<div class="stat">'
+        f'<div class="stat-label">{label}</div>'
+        f'<div class="stat-value"{value_style}>{value}</div>'
+        "</div>"
+    )
+
+
+def _primary_stat_grid(profile) -> str:
+    cards = (
+        _stat_card("Tracks mapped", str(profile.track_count))
+        + _stat_card("Avg popularity", str(profile.avg_popularity))
+        + _stat_card("Artists touched", str(profile.artist_count))
+        + _stat_card("Deep-cuts index", str(profile.obscurity_score), accent=True)
+    )
+    return f'<div class="stat-grid">{cards}</div>'
+
+
+def _hero_editorial_block(portrait, source_label: str, ai_note: str) -> str:
+    label_html = ""
+    if portrait.label.strip():
+        label_html = f'<p class="hero-label">{portrait.label}</p>'
+    return (
+        '<div class="hero-editorial">'
+        f'<p class="hero-caption">Spotify Portrait / {source_label}{ai_note}</p>'
+        f'<h1 class="hero-title">{portrait.title}</h1>'
+        f"{label_html}"
+        f'<p class="interpretation">{portrait.interpretation}</p>'
+        "</div>"
+    )
 
 
 def _playlist_label(path: Path) -> str:
@@ -616,26 +643,24 @@ ai_note = f" · {portrait.source} portrait" if portrait.source != "template" els
 
 st.markdown(
     '<p class="control-hint">Switch playlist above, or upload a fresh '
-    '<a href="https://exportify.net" style="color:#f97316;">Exportify</a> CSV.</p>',
+    '<a href="https://exportify.net" style="color:#c9925a;">Exportify</a> CSV.</p>',
     unsafe_allow_html=True,
 )
+
+hero_left, hero_right = st.columns([1.25, 0.75], gap="medium")
+with hero_left:
+    st.markdown(_hero_editorial_block(portrait, source_label, ai_note), unsafe_allow_html=True)
+with hero_right:
+    st.markdown(_primary_stat_grid(profile), unsafe_allow_html=True)
+
+st.markdown(_mood_strip(profile), unsafe_allow_html=True)
 
 if library_summary:
     st.markdown(
-        f'<p class="library-summary-label">Your library</p>'
-        f'<p class="library-summary">{library_summary}</p>',
+        f'<p class="library-context-label">Library context</p>'
+        f'<p class="library-context">{library_summary}</p>',
         unsafe_allow_html=True,
     )
-
-st.markdown(
-    f'<p class="hero-caption">Spotify Portrait / {source_label}{ai_note}</p>',
-    unsafe_allow_html=True,
-)
-st.markdown(f'<p class="hero-title">{portrait.title}</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="hero-label">{portrait.label}</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="interpretation">{portrait.interpretation}</p>', unsafe_allow_html=True)
-st.markdown(_stat_strip(profile), unsafe_allow_html=True)
-st.markdown(_mood_strip(profile), unsafe_allow_html=True)
 
 genre_total = len(profile.genre_weights)
 st.markdown('<p class="section-label">Top genres</p>', unsafe_allow_html=True)

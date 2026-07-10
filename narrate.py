@@ -101,33 +101,42 @@ def _pick_story_angle(profile: TasteProfile, brief: dict) -> StoryAngle:
     return StoryAngle.ERA_LOCKED
 
 
+def _depth_tag(profile: TasteProfile) -> str:
+    if profile.obscurity_score >= 65:
+        return "Off the Algorithm"
+    if profile.obscurity_score >= 40:
+        return "Beyond the Charts"
+    return "Chart Favourites"
+
+
 def _title_for_angle(angle: StoryAngle, profile: TasteProfile, brief: dict) -> str:
     genre = _genre_title(brief)
     era = brief.get("top_era")
+    artist = brief.get("top_artist")
+    depth = _depth_tag(profile)
 
     if angle == StoryAngle.MAINSTREAM_ADJACENT:
         if era:
-            return f"{genre}, {era} Favourites"
+            return f"{era} {genre}, Chart Favourites"
         return f"{genre} on Repeat"
 
     if angle == StoryAngle.MOOD_LED:
         if _is_bright(brief):
             return f"{genre} in Full Colour"
         if _is_quiet(brief):
-            return f"{genre} in the Margins"
+            return f"{genre} at Low Light"
         return f"{genre}, Steady Motion"
 
     if angle == StoryAngle.GENRE_SCATTER:
         return f"Wide Lens, {era} Centre" if era else "A Scattered Library"
 
     if angle == StoryAngle.ARTIST_ANCHORED:
-        artist = brief.get("top_artist")
         if artist:
-            return f"{artist}, {genre} Orbit"
+            return f"{artist} and {genre}"
         return f"{genre} on Repeat"
 
     if angle == StoryAngle.ERA_LOCKED and era:
-        return f"{genre}, {era} Weight"
+        return f"{era} {genre}, {depth}"
 
     if profile.obscurity_score >= 65:
         return f"{genre} in the Margins"
@@ -136,7 +145,7 @@ def _title_for_angle(angle: StoryAngle, profile: TasteProfile, brief: dict) -> s
         return f"{genre} in Full Colour"
     if _is_quiet(brief):
         return f"{genre} at Low Light"
-    return f"{genre}, {era} Tilt" if era else f"{genre} at Low Light"
+    return f"{era} {genre}, {depth}" if era else f"{genre}, {depth}"
 
 
 def _pick_phrase(key: str, options: list[str]) -> str:
@@ -145,164 +154,78 @@ def _pick_phrase(key: str, options: list[str]) -> str:
     return options[hash(key) % len(options)]
 
 
-def _scatter_clause(brief: dict, angle: StoryAngle, playlist: str) -> str:
-    """Mid-label genre spread hint — omitted when another story angle already leads."""
-    if brief.get("genre_concentrated") and brief.get("top_genre"):
-        return f"with {brief['top_genre']} carrying real weight, "
-    if not brief.get("genre_scattered"):
+def _secondary_genres_clause(brief: dict) -> str:
+    genres = _top_genres_list(brief, 3)
+    if len(genres) < 2:
         return ""
-    if angle == StoryAngle.GENRE_SCATTER:
-        return ""
-    if angle in (
-        StoryAngle.ERA_LOCKED,
-        StoryAngle.MOOD_LED,
-        StoryAngle.ARTIST_ANCHORED,
-        StoryAngle.MAINSTREAM_ADJACENT,
-    ):
-        return ""
-    options = ["", "", "several lanes in play, ", "genres kept loose, "]
-    return _pick_phrase(f"scatter:{playlist}", options)
+    second = genres[1].title()
+    if len(genres) == 2:
+        return f"{second} broadens the core"
+    third = genres[2].title()
+    return f"{second} and {third} broaden the core"
 
 
-def _human_label(profile: TasteProfile, brief: dict, angle: StoryAngle) -> str:
-    genres = _genre_phrase(brief, 3)
-    era = brief.get("top_era")
-    playlist = brief.get("playlist", "")
-
-    era_clause = ""
-    if era and brief.get("era_outlier"):
-        era_clause = f"A {era}-heavy collection, "
-    elif era and brief.get("top_era_share_pct", 0) >= 40:
-        era_clause = f"Rooted in the {era}, "
-
-    scatter_clause = _scatter_clause(brief, angle, playlist)
-
-    if angle == StoryAngle.MOOD_LED and _is_quiet(brief):
-        endings = ["built for low light.", "meant for quiet hours.", "a slow-burn stack."]
-    elif angle == StoryAngle.MOOD_LED and _is_bright(brief):
-        endings = ["sunny and kinetic throughout.", "bright end of the dial.", "more lift than gloom."]
-    elif angle == StoryAngle.ERA_LOCKED:
-        endings = ["decade-first, genre-second.", "era sets the frame.", "genre follows the decade."]
-    elif angle == StoryAngle.GENRE_SCATTER:
-        endings = ["eclectic by design.", "taste spread wide.", "built for browsing."]
-    elif angle == StoryAngle.ARTIST_ANCHORED:
-        endings = ["favourites on repeat.", "personal canon energy.", "names over novelty."]
-    elif angle == StoryAngle.MAINSTREAM_ADJACENT:
-        endings = ["chart-adjacent, familiar ground.", "hits and comfort picks.", "the accessible shelf."]
-    elif angle == StoryAngle.DEEP_WARREN:
-        endings = ["wide lanes, deep cuts.", "collector's spread.", "curiosity over consensus."]
-    else:
-        endings = ["genre-led, library-first.", "taste over trend.", "built to browse."]
-
-    ending = _pick_phrase(playlist or genres, endings)
-    text = f"{era_clause}pulled toward {genres}, {scatter_clause}{ending}".replace(" ,", ",")
-    if text and text[0].islower():
-        text = text[0].upper() + text[1:]
-    return text
-
-
-def _depth_close(profile: TasteProfile, playlist_name: str = "") -> str:
-    key = playlist_name or str(profile.obscurity_score)
+def _depth_clause(profile: TasteProfile) -> str:
     if profile.obscurity_score >= 65:
-        return _pick_phrase(
-            key,
-            [
-                "More crate than chart.",
-                "Built from quieter corners, not charts.",
-                "The algorithm rarely visits here.",
-            ],
-        )
+        return "Low popularity keeps the selection in quieter corners rather than chart rotation."
     if profile.obscurity_score >= 40:
-        return _pick_phrase(
-            key,
-            [
-                "A balance of favourites and hidden corners.",
-                "Mixes the familiar with the overlooked.",
-                "Some hits, plenty of depth.",
-            ],
-        )
-    return _pick_phrase(
-        key,
-        [
-            "Comfortably in the mainstream lane.",
-            "Anchored in well-known records.",
-            "Built from the middle of the road.",
-        ],
-    )
+        return "Favourites and overlooked tracks sit side by side rather than pure chart fare."
+    return "Well-known names and hits anchor the list without much digging required."
 
 
 def _interpretation_for_angle(
     angle: StoryAngle, profile: TasteProfile, brief: dict
 ) -> str:
-    genres = _genre_phrase(brief, 3)
     era = brief.get("top_era")
     artist = brief.get("top_artist")
     mood = brief.get("mood") or {}
-    sentences: list[str] = []
+    secondary = _secondary_genres_clause(brief)
+    depth = _depth_clause(profile)
+
+    if angle == StoryAngle.ERA_LOCKED and era:
+        if secondary:
+            lead = f"{secondary}, while the {era} supply roughly half the tracks."
+        elif brief.get("top_era_share_pct", 0) >= 35:
+            lead = f"The {era} supply roughly half the tracks."
+        else:
+            lead = f"A {era}-shaped stack with room to roam between lanes."
+        return f"{lead} {depth}"
 
     if angle == StoryAngle.DEEP_WARREN:
-        sentences.append(
-            f"The centre of gravity is {genres} — a collector's map, not a chart playlist."
-        )
-    elif angle == StoryAngle.ERA_LOCKED and era:
-        era_in_label = (
-            not brief.get("era_outlier")
-            and brief.get("top_era_share_pct", 0) >= 40
-        )
-        if era_in_label:
-            sentences.append(
-                f"The weight falls on {genres} — decade-first listening, not genre-hopping."
-            )
+        genres = _genre_phrase(brief, 2)
+        return f"{genres.title()} lead a wide collector's map. {depth}"
+
+    if angle == StoryAngle.GENRE_SCATTER:
+        genres = _genre_phrase(brief, 3)
+        era_bit = f", with the {era} as the anchor decade" if era else ""
+        return f"No single genre owns this list — {genres} share the frame{era_bit}. {depth}"
+
+    if angle == StoryAngle.ARTIST_ANCHORED and artist:
+        count = brief.get("top_artist_tracks")
+        if count:
+            lead = f"{artist} shows up {count} times, anchoring a personal rotation."
         else:
-            sentences.append(
-                f"This playlist lives in the {era}: {genres} set the tone, decade first."
-            )
-    elif angle == StoryAngle.GENRE_SCATTER:
-        sentences.append(
-            f"No single genre owns this library — {genres} share the frame, with plenty of drift between."
-        )
-    elif angle == StoryAngle.ARTIST_ANCHORED and artist:
-        sentences.append(
-            f"{artist} keeps returning here, anchoring a {genres} collection that feels personal, not algorithmic."
-        )
-    elif angle == StoryAngle.MOOD_LED:
+            lead = f"{artist} keeps returning here, anchoring a personal rotation."
+        return f"{lead} {depth}"
+
+    if angle == StoryAngle.MOOD_LED:
         contrast = mood.get("contrast")
         if _is_bright(brief):
-            sentences.append(
-                f"Bright and kinetic throughout — {genres} with more lift than gloom."
-            )
+            lead = "Bright and kinetic throughout — more lift than gloom."
         elif _is_quiet(brief):
-            sentences.append(
-                f"Quiet and inward — {genres} meant for low light and long listens."
-            )
+            lead = "Quiet and inward — built for low light and long listens."
         elif contrast:
-            sentences.append(
-                f"The mood runs {contrast.lower()} — {genres} with tension between feel and tempo."
-            )
+            lead = f"The mood runs {contrast.lower()}."
         else:
-            sentences.append(f"Feel leads genre here — {genres} with a consistent emotional through-line.")
-    elif angle == StoryAngle.MAINSTREAM_ADJACENT:
-        sentences.append(
-            f"Familiar ground: {genres}, with fewer deep cuts than the rest of the library."
-        )
-    else:
-        sentences.append(f"The centre of gravity is {genres}.")
+            lead = "Feel leads genre here, with a consistent emotional through-line."
+        return f"{lead} {depth}"
 
-    # Middle sentence — one woven detail, at most one number
-    if angle == StoryAngle.ARTIST_ANCHORED and artist and brief.get("top_artist_tracks"):
-        count = brief["top_artist_tracks"]
-        sentences.append(f"{artist} shows up {count} times — a clear favourite in rotation.")
-    elif angle == StoryAngle.ERA_LOCKED and era and not brief.get("era_outlier"):
-        pct = brief.get("top_era_share_pct")
-        if pct and pct >= 35:
-            sentences.append(f"Roughly half the list was made in the {era}.")
-    elif mood.get("contrast") and angle != StoryAngle.MOOD_LED:
-        sentences.append(mood["contrast"].capitalize() + ".")
-    elif artist and angle != StoryAngle.ARTIST_ANCHORED:
-        sentences.append(f"{artist} is the most repeated name here.")
+    if angle == StoryAngle.MAINSTREAM_ADJACENT:
+        genres = _genre_phrase(brief, 2)
+        return f"Familiar {genres} sit closer to the charts than the rest of the library. {depth}"
 
-    sentences.append(_depth_close(profile, brief.get("playlist", "")))
-    return " ".join(sentences)
+    genres = _genre_phrase(brief, 2)
+    return f"{genres.title()} set the tone. {depth}"
 
 
 def template_portrait(profile: TasteProfile, brief: dict) -> Portrait:
@@ -310,7 +233,7 @@ def template_portrait(profile: TasteProfile, brief: dict) -> Portrait:
     angle = _pick_story_angle(profile, brief)
     return Portrait(
         title=_title_for_angle(angle, profile, brief),
-        label=_human_label(profile, brief, angle),
+        label="",
         interpretation=_interpretation_for_angle(angle, profile, brief),
         source="template",
     )
@@ -438,18 +361,18 @@ Return valid JSON only:
 {"title": "...", "label": "...", "interpretation": "..."}
 
 Voice rules:
-- Title: 3–6 words, evocative (e.g. "Ambient in the Margins", "Art Rock, 1990s Weight").
-- Label: one flowing sentence — no slash lists, no comma-separated tags.
-- Interpretation: 2–3 sentences max. Lead with character and feel; weave in at most ONE number if it earns its place.
-- Prefer phrases like "centre of gravity", "off the algorithm", "low light" over raw statistics.
+- Title: one 5–8 word display headline that combines era, lead genre, and listening character (e.g. "2010s Organic House, Off the Algorithm").
+- Label: leave as an empty string unless a single short subline truly adds something the title cannot.
+- Interpretation: 1–2 sentences max. Add new detail only — do not repeat the headline's era/genre claim.
+- Prefer phrases like "off the algorithm", "quieter corners", "low light" over raw statistics.
 
-Forbidden phrases: "genre tags", "distinct genres", "tracks sit in", "deep-cuts index", "X% of genre", "appears most (".
+Forbidden phrases: "decade-first listening", "era sets the frame", "genre follows the decade", "genre tags", "distinct genres", "tracks sit in", "deep-cuts index", "X% of genre", "appears most (".
 
 Example A (quiet electronic):
-{"title": "Ambient in the Margins", "label": "A 2010s-heavy set pulled toward ambient and downtempo, mostly off the algorithm.", "interpretation": "Quiet and inward — music for low light and long listens. The centre of gravity is ambient and idm, with little interest in the mainstream lane. Mostly off the algorithm — more crate than chart."}
+{"title": "2010s Ambient, Off the Algorithm", "label": "", "interpretation": "Downtempo and IDM widen the ambient core, while the 2010s supply most of the tracks. Low popularity keeps the selection in quieter corners rather than chart rotation."}
 
 Example B (bright dance):
-{"title": "Disco House in Full Colour", "label": "Pulled toward disco house and afropop, bright and kinetic throughout.", "interpretation": "Bright and driving — this is a sunny, danceable stack, not a late-night drift. Disco house and afropop set the tone. A balance of favourites and hidden corners."}
+{"title": "Disco House in Full Colour", "label": "", "interpretation": "Afropop and nu disco add lift without losing the dancefloor centre. Favourites and overlooked tracks sit side by side rather than pure chart fare."}
 """
 
 
