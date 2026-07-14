@@ -106,7 +106,7 @@ def _depth_tag(profile: TasteProfile) -> str:
         return "Off the Algorithm"
     if profile.obscurity_score >= 40:
         return "Beyond the Charts"
-    return "Chart Favourites"
+    return "Chart Favorites"
 
 
 def _title_for_angle(angle: StoryAngle, profile: TasteProfile, brief: dict) -> str:
@@ -117,18 +117,18 @@ def _title_for_angle(angle: StoryAngle, profile: TasteProfile, brief: dict) -> s
 
     if angle == StoryAngle.MAINSTREAM_ADJACENT:
         if era:
-            return f"{era} {genre}, Chart Favourites"
+            return f"{era} {genre}, Chart Favorites"
         return f"{genre} on Repeat"
 
     if angle == StoryAngle.MOOD_LED:
         if _is_bright(brief):
-            return f"{genre} in Full Colour"
+            return f"{genre} in Full Color"
         if _is_quiet(brief):
             return f"{genre} at Low Light"
         return f"{genre}, Steady Motion"
 
     if angle == StoryAngle.GENRE_SCATTER:
-        return f"Wide Lens, {era} Centre" if era else "A Scattered Library"
+        return f"Wide Lens, {era} Center" if era else "A Scattered Library"
 
     if angle == StoryAngle.ARTIST_ANCHORED:
         if artist:
@@ -142,16 +142,10 @@ def _title_for_angle(angle: StoryAngle, profile: TasteProfile, brief: dict) -> s
         return f"{genre} in the Margins"
 
     if _is_bright(brief):
-        return f"{genre} in Full Colour"
+        return f"{genre} in Full Color"
     if _is_quiet(brief):
         return f"{genre} at Low Light"
     return f"{era} {genre}, {depth}" if era else f"{genre}, {depth}"
-
-
-def _pick_phrase(key: str, options: list[str]) -> str:
-    if not options:
-        return ""
-    return options[hash(key) % len(options)]
 
 
 def _secondary_genres_clause(brief: dict) -> str:
@@ -167,10 +161,33 @@ def _secondary_genres_clause(brief: dict) -> str:
 
 def _depth_clause(profile: TasteProfile) -> str:
     if profile.obscurity_score >= 65:
-        return "Low popularity keeps the selection in quieter corners rather than chart rotation."
+        return "Popularity stays low across the playlist, away from the current mainstream."
     if profile.obscurity_score >= 40:
-        return "Favourites and overlooked tracks sit side by side rather than pure chart fare."
-    return "Well-known names and hits anchor the list without much digging required."
+        return "Popularity sits near the middle of Spotify's scale."
+    return "Popularity runs high on Spotify's scale."
+
+
+def _supporting_detail(angle: StoryAngle, profile: TasteProfile, brief: dict) -> str:
+    """One additional observation that does not repeat the lead angle."""
+    s = profile.stats
+
+    if angle != StoryAngle.ERA_LOCKED and s.era_span_decades >= 4:
+        return f"The release dates span {s.era_span_decades} decades."
+
+    if (
+        angle != StoryAngle.ARTIST_ANCHORED
+        and s.top_artist
+        and s.top_artist_share_pct >= 8
+    ):
+        return f"{s.top_artist} is the most frequently repeated artist in the selection."
+
+    if angle != StoryAngle.GENRE_SCATTER and s.top_genre_share_pct < 15:
+        return "No one style carries much of the overall weight."
+
+    if angle != StoryAngle.ARTIST_ANCHORED and s.tracks_per_artist <= 1.5:
+        return "Most artists appear only once or twice."
+
+    return ""
 
 
 def _interpretation_for_angle(
@@ -181,51 +198,70 @@ def _interpretation_for_angle(
     mood = brief.get("mood") or {}
     secondary = _secondary_genres_clause(brief)
     depth = _depth_clause(profile)
+    supporting = _supporting_detail(angle, profile, brief)
 
     if angle == StoryAngle.ERA_LOCKED and era:
         if secondary:
-            lead = f"{secondary}, while the {era} supply roughly half the tracks."
-        elif brief.get("top_era_share_pct", 0) >= 35:
-            lead = f"The {era} supply roughly half the tracks."
+            lead = f"{secondary}, while the {era} account for the largest share of the tracks."
+        elif brief.get("top_era_share_pct", 0):
+            lead = f"The {era} account for the largest share of the tracks."
         else:
-            lead = f"A {era}-shaped stack with room to roam between lanes."
-        return f"{lead} {depth}"
+            lead = f"The release dates center on the {era}."
+        return " ".join(part for part in (lead, depth, supporting) if part)
 
     if angle == StoryAngle.DEEP_WARREN:
         genres = _genre_phrase(brief, 2)
-        return f"{genres.title()} lead a wide collector's map. {depth}"
+        return " ".join(
+            part for part in (f"{genres.title()} are the clearest musical thread.", depth, supporting) if part
+        )
 
     if angle == StoryAngle.GENRE_SCATTER:
         genres = _genre_phrase(brief, 3)
         era_bit = f", with the {era} as the anchor decade" if era else ""
-        return f"No single genre owns this list — {genres} share the frame{era_bit}. {depth}"
+        return " ".join(
+            part
+            for part in (
+                f"No genre dominates: {genres} are the strongest strands{era_bit}.",
+                depth,
+                supporting,
+            )
+            if part
+        )
 
     if angle == StoryAngle.ARTIST_ANCHORED and artist:
         count = brief.get("top_artist_tracks")
         if count:
-            lead = f"{artist} shows up {count} times, anchoring a personal rotation."
+            lead = f"{artist} appears {count} times, more than any other artist."
         else:
-            lead = f"{artist} keeps returning here, anchoring a personal rotation."
-        return f"{lead} {depth}"
+            lead = f"{artist} appears more often than any other artist."
+        return " ".join(part for part in (lead, depth, supporting) if part)
 
     if angle == StoryAngle.MOOD_LED:
         contrast = mood.get("contrast")
         if _is_bright(brief):
-            lead = "Bright and kinetic throughout — more lift than gloom."
+            lead = "The tracks are generally bright and high-energy."
         elif _is_quiet(brief):
-            lead = "Quiet and inward — built for low light and long listens."
+            lead = "The tracks are generally low-energy and subdued."
         elif contrast:
-            lead = f"The mood runs {contrast.lower()}."
+            lead = f"The mood is {contrast.lower()}."
         else:
-            lead = "Feel leads genre here, with a consistent emotional through-line."
-        return f"{lead} {depth}"
+            lead = "The audio features point to a consistent mood."
+        return " ".join(part for part in (lead, depth, supporting) if part)
 
     if angle == StoryAngle.MAINSTREAM_ADJACENT:
         genres = _genre_phrase(brief, 2)
-        return f"Familiar {genres} sit closer to the charts than the rest of the library. {depth}"
+        return " ".join(
+            part
+            for part in (
+                f"{genres.title()} lead a relatively high-popularity selection.",
+                depth,
+                supporting,
+            )
+            if part
+        )
 
     genres = _genre_phrase(brief, 2)
-    return f"{genres.title()} set the tone. {depth}"
+    return " ".join(part for part in (f"{genres.title()} are the dominant sounds here.", depth, supporting) if part)
 
 
 def template_portrait(profile: TasteProfile, brief: dict) -> Portrait:
@@ -246,19 +282,19 @@ def template_library_summary(summary: dict) -> str:
 
     n = summary["playlist_count"]
     tracks = summary["total_tracks"]
-    lead = f"{n} playlists mapped ({tracks:,} tracks). "
+    lead = f"{n} playlists · {tracks:,} tracks. "
 
     common_genre = summary.get("common_genre")
     common_era = summary.get("common_era")
     common_count = summary.get("common_genre_count", 0)
 
     if common_genre and common_count >= 2:
-        thread = f"Most centre on {common_genre}"
+        thread = f"{common_genre.title()} is the common thread"
         if common_era and common_count >= n // 2 + 1:
-            thread += f" and the {common_era}"
+            thread += f", with the {common_era} appearing most often"
         lead += thread + ". "
     elif common_era:
-        lead += f"Most lean toward the {common_era}. "
+        lead += f"The {common_era} are the most common release period. "
 
     extras: list[str] = []
 
@@ -267,16 +303,16 @@ def template_library_summary(summary: dict) -> str:
     outlier_era = summary.get("outlier_era")
     if outlier and outlier_genre:
         era_bit = f", {outlier_era}" if outlier_era and outlier_era != common_era else ""
-        extras.append(f"{outlier} breaks the pattern ({outlier_genre}{era_bit})")
+        extras.append(f"{outlier} is the outlier ({outlier_genre}{era_bit})")
 
     quietest = summary.get("quietest")
     brightest = summary.get("brightest")
     if quietest and brightest and quietest != brightest:
-        extras.append(f"{quietest} is the quietest; {brightest} the brightest")
+        extras.append(f"{quietest} has the lowest energy; {brightest} the highest positivity")
     elif quietest:
-        extras.append(f"{quietest} is the quietest stack")
+        extras.append(f"{quietest} has the lowest energy")
     elif brightest:
-        extras.append(f"{brightest} is the brightest stack")
+        extras.append(f"{brightest} has the highest positivity")
 
     mainstream = summary.get("mainstream_name")
     if (
@@ -284,20 +320,13 @@ def template_library_summary(summary: dict) -> str:
         and summary.get("mainstream_deep_cuts", 100) < 60
         and mainstream != outlier
     ):
-        extras.append(f"{mainstream} sits closest to the mainstream")
+        extras.append(f"{mainstream} has the highest average popularity")
 
     if extras:
         lead += ". ".join(extras) + "."
 
     if summary.get("avg_deep_cuts", 0) >= 70:
-        lead += " " + _pick_phrase(
-            str(summary.get("playlist_count", 0)),
-            [
-                "A collection that mostly digs, not streams.",
-                "Overall, more discovery than comfort picks.",
-                "Built for browsing, not background play.",
-            ],
-        )
+        lead = lead.rstrip() + " Across the collection, average popularity remains low."
 
     return lead.strip()
 
@@ -363,16 +392,17 @@ Return valid JSON only:
 Voice rules:
 - Title: one 5–8 word display headline that combines era, lead genre, and listening character (e.g. "2010s Organic House, Off the Algorithm").
 - Label: leave as an empty string unless a single short subline truly adds something the title cannot.
-- Interpretation: 1–2 sentences max. Add new detail only — do not repeat the headline's era/genre claim.
-- Prefer phrases like "off the algorithm", "quieter corners", "low light" over raw statistics.
+- Interpretation: two short sentences; add a third only when it introduces a separate fact. Do not pad with lifestyle language or a summary of the title.
+- State relative popularity plainly. Never contrast discovering music with streaming it, or imply a track's popularity explains how it is played.
+- Do not weaken a claim with a self-qualifier such as "only part of the picture."
 
-Forbidden phrases: "decade-first listening", "era sets the frame", "genre follows the decade", "genre tags", "distinct genres", "tracks sit in", "deep-cuts index", "X% of genre", "appears most (".
+Forbidden phrases: "decade-first listening", "era sets the frame", "genre follows the decade", "genre tags", "distinct genres", "tracks sit in", "deep-cuts index", "digs, not streams", "more discovery than comfort", "built for browsing", "X% of genre", "appears most (".
 
 Example A (quiet electronic):
-{"title": "2010s Ambient, Off the Algorithm", "label": "", "interpretation": "Downtempo and IDM widen the ambient core, while the 2010s supply most of the tracks. Low popularity keeps the selection in quieter corners rather than chart rotation."}
+{"title": "2010s Ambient, Off the Algorithm", "label": "", "interpretation": "Downtempo and IDM extend an ambient center. The 2010s account for the largest share of the tracks. Popularity stays low across the playlist, away from the current mainstream."}
 
 Example B (bright dance):
-{"title": "Disco House in Full Colour", "label": "", "interpretation": "Afropop and nu disco add lift without losing the dancefloor centre. Favourites and overlooked tracks sit side by side rather than pure chart fare."}
+{"title": "Disco House in Full Color", "label": "", "interpretation": "The audio features are bright and high-energy. Afropop and nu disco are the strongest secondary styles. Popularity sits near the middle of Spotify's scale."}
 """
 
 

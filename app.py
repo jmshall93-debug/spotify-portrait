@@ -1,5 +1,7 @@
 """Spotify Portrait - Streamlit UI."""
 
+import html
+import io
 import importlib
 import json
 import re
@@ -44,6 +46,8 @@ CREAM = "#f4f2ef"
 CHART_LOW = "#162235"
 CHART_HIGH = "#2f5d62"
 CHART_HIGHLIGHT = "#c9925a"
+STRUCTURE_STEM = "#566270"
+STRUCTURE_DOT = "#47777a"
 # Interleaved: ember → petrol → slate → plum — adjacent cells get different families.
 GENRE_PALETTE = [
     "#7c2d12",
@@ -102,7 +106,14 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
 .control-hint {{
     color: {MUTED};
     font-size: 0.76rem;
-    margin: 0.25rem 0 0.85rem 0;
+    line-height: 1.5;
+    margin: 0.15rem 0 0.65rem 0;
+}}
+.hero-block {{
+    margin-bottom: 0.85rem;
+}}
+.headline-stats {{
+    margin-bottom: 0.35rem;
 }}
 .library-context {{
     color: {MUTED};
@@ -134,7 +145,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     line-height: 1.12;
     margin: 0 0 0.75rem 0;
     color: {TEXT};
-    max-width: 18ch;
+    max-width: 22ch;
 }}
 .hero-label {{
     font-family: Inter, Segoe UI, system-ui, sans-serif;
@@ -161,17 +172,10 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.55rem;
-    margin: 0 0 1.25rem 0;
+    margin: 0 0 1rem 0;
 }}
-.stat-grid {{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.55rem;
-    margin: 0;
-}}
-.hero-row {{
-    align-items: start;
-    margin-bottom: 0.35rem;
+.section-label-tight {{
+    margin-top: 0.5rem;
 }}
 @media (max-width: 720px) {{
     .block-container {{
@@ -180,7 +184,6 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
         padding-right: 0.85rem;
     }}
     .stat-strip {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
-    .stat-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
     .hero-title {{ font-size: 1.85rem; letter-spacing: -0.03em; max-width: none; }}
     .hero-label {{ font-size: 0.95rem; margin-bottom: 0.55rem; }}
     .interpretation {{ font-size: 0.9rem; line-height: 1.55; margin-bottom: 1rem; }}
@@ -208,7 +211,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
         display: none !important;
     }}
     [data-testid="stPlotlyChart"] {{
-        padding: 0.1rem;
+        padding: 0.35rem 0.5rem;
     }}
 }}
 @media (max-width: 420px) {{
@@ -220,7 +223,9 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     background: {SURFACE};
     border: 1px solid {BORDER_STRONG};
     border-radius: 10px;
-    padding: 0.75rem 0.9rem;
+    padding: 0.8rem 1rem;
+    overflow: visible;
+    min-width: 0;
 }}
 .stat-label {{
     color: {STAT_LABEL};
@@ -228,12 +233,16 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     text-transform: uppercase;
     letter-spacing: 0.14em;
     margin-bottom: 0.32rem;
+    line-height: 1.3;
 }}
 .stat-value {{
     color: {TEXT};
     font-size: 1.35rem;
     font-weight: 600;
     letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+    padding-left: 1px;
 }}
 .hero-caption {{
     font-size: 0.65rem;
@@ -253,8 +262,9 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     background: {SURFACE};
     border: 1px solid {BORDER};
     border-radius: 10px;
-    padding: 0.35rem;
+    padding: 0.5rem 0.75rem;
     margin-bottom: 0.35rem;
+    overflow: visible;
 }}
 .footer-note {{
     color: {MUTED};
@@ -263,6 +273,76 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {{
     margin: 2.2rem 0 0.5rem 0;
     padding-top: 1.2rem;
     border-top: 1px solid {BORDER};
+}}
+.stat-label-help {{
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}}
+.metric-info {{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 50%;
+    border: 1px solid {BORDER_STRONG};
+    color: {MUTED};
+    font-size: 0.55rem;
+    font-weight: 600;
+    font-style: italic;
+    cursor: help;
+    position: relative;
+    flex-shrink: 0;
+    text-transform: none;
+    letter-spacing: 0;
+    outline: none;
+}}
+.metric-info-tip {{
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 0.4rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 14rem;
+    padding: 0.45rem 0.55rem;
+    background: {SURFACE_RAISED};
+    border: 1px solid {BORDER_STRONG};
+    border-radius: 6px;
+    color: {BODY_TEXT};
+    font-size: 0.72rem;
+    line-height: 1.45;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    font-style: normal;
+    z-index: 10;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}}
+.metric-info:hover .metric-info-tip,
+.metric-info:focus .metric-info-tip,
+.metric-info:focus-visible .metric-info-tip {{
+    visibility: visible;
+    opacity: 1;
+}}
+.reset-toast {{
+    color: {AMBER};
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0 0 0.75rem 0;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(201, 146, 90, 0.35);
+    border-radius: 8px;
+    background: rgba(201, 146, 90, 0.08);
+}}
+div[data-testid="stDialog"] [data-testid="stMarkdownContainer"] p {{
+    color: {BODY_TEXT};
+    font-size: 0.9rem;
+    line-height: 1.6;
 }}
 </style>
 """
@@ -339,6 +419,33 @@ def _bar_fill_with_highlight(
     return colors
 
 
+def _lollipop_colors(values: list[int] | list[float]) -> list[str]:
+    """Muted dots with amber shared by tied leaders."""
+    if not values:
+        return []
+    peak = max(values)
+    return [CHART_HIGHLIGHT if value == peak else STRUCTURE_DOT for value in values]
+
+
+def _lollipop_stems(
+    categories: list[str],
+    values: list[int] | list[float],
+    horizontal: bool,
+    start: float = 0,
+) -> tuple[list[float | str | None], list[float | str | None]]:
+    """Separated line coordinates for one lollipop stem per category."""
+    first: list[float | str | None] = []
+    second: list[float | str | None] = []
+    for category, value in zip(categories, values):
+        if horizontal:
+            first.extend([start, value, None])
+            second.extend([category, category, None])
+        else:
+            first.extend([category, category, None])
+            second.extend([start, value, None])
+    return first, second
+
+
 def _profile_attr(profile, name: str):
     return getattr(profile, name, None)
 
@@ -347,10 +454,36 @@ def _pct(value: float) -> int:
     return round(value * 100)
 
 
+METRIC_HELP = {
+    "energy": "How intense and active the tracks feel (0–100%). Requires Spotify audio features.",
+    "danceability": "How suitable the tracks are for dancing, based on rhythm and tempo (0–100%).",
+    "positivity": "Musical positivity—how happy or sad the tracks sound (0–100%).",
+    "tempo": "Average estimated speed in beats per minute.",
+    "genres_tagged": "Number of distinct genre tags across the playlist.",
+    "deep_cuts": "Distance from the mainstream: 100 minus average popularity. Higher means deeper cuts.",
+}
+
+
+def _stat_label_html(label: str, help_key: str | None = None) -> str:
+    if not help_key:
+        return f'<div class="stat-label">{label}</div>'
+    tip = html.escape(METRIC_HELP[help_key])
+    return (
+        '<div class="stat-label stat-label-help">'
+        f"<span>{label}</span>"
+        f'<span class="metric-info" tabindex="0" aria-label="{tip}">i'
+        f'<span class="metric-info-tip" role="tooltip">{tip}</span>'
+        "</span></div>"
+    )
+
+
 def _mood_strip(profile) -> str:
     energy = _profile_attr(profile, "avg_energy")
     if energy is None:
-        return ""
+        return """
+    <p class="section-label section-label-tight">Mood fingerprint</p>
+    <p class="chart-note">Audio features aren't included in this export, so mood stats aren't shown.</p>
+    """
 
     tempo_val = _profile_attr(profile, "avg_tempo")
     dance_val = _profile_attr(profile, "avg_danceability")
@@ -359,46 +492,53 @@ def _mood_strip(profile) -> str:
     dance = _pct(dance_val) if dance_val is not None else "—"
     valence = _pct(valence_val) if valence_val is not None else "—"
     return f"""
-    <p class="section-label" style="margin-top: 0.25rem;">Mood fingerprint</p>
+    <p class="section-label section-label-tight">Mood fingerprint</p>
     <div class="stat-strip">
         <div class="stat">
-            <div class="stat-label">Energy</div>
+            {_stat_label_html("Energy", "energy")}
             <div class="stat-value">{_pct(energy)}%</div>
         </div>
         <div class="stat">
-            <div class="stat-label">Danceability</div>
+            {_stat_label_html("Danceability", "danceability")}
             <div class="stat-value">{dance}%</div>
         </div>
         <div class="stat">
-            <div class="stat-label">Positivity</div>
+            {_stat_label_html("Positivity", "positivity")}
             <div class="stat-value">{valence}%</div>
         </div>
         <div class="stat">
-            <div class="stat-label">Tempo</div>
+            {_stat_label_html("Tempo", "tempo")}
             <div class="stat-value">{tempo}<span style="font-size:0.75rem;color:{MUTED};"> bpm</span></div>
         </div>
     </div>
     """
 
 
-def _stat_card(label: str, value: str, accent: bool = False) -> str:
+def _stat_card(
+    label: str,
+    value: str,
+    accent: bool = False,
+    help_key: str | None = None,
+) -> str:
     value_style = f' style="color: {ACCENT_GLOW};"' if accent else ""
     return (
         '<div class="stat">'
-        f'<div class="stat-label">{label}</div>'
+        f"{_stat_label_html(label, help_key)}"
         f'<div class="stat-value"{value_style}>{value}</div>'
         "</div>"
     )
 
 
-def _primary_stat_grid(profile) -> str:
+def _primary_stat_strip(profile) -> str:
+    genre_count = profile.stats.unique_genres
+    genre_value = str(genre_count) if genre_count else "—"
     cards = (
-        _stat_card("Tracks mapped", str(profile.track_count))
-        + _stat_card("Avg popularity", str(profile.avg_popularity))
-        + _stat_card("Artists touched", str(profile.artist_count))
-        + _stat_card("Deep-cuts index", str(profile.obscurity_score), accent=True)
+        _stat_card("Tracks", str(profile.track_count))
+        + _stat_card("Genre tags", genre_value, help_key="genres_tagged")
+        + _stat_card("Unique artists", str(profile.artist_count))
+        + _stat_card("Deep cuts index", str(profile.obscurity_score), accent=True, help_key="deep_cuts")
     )
-    return f'<div class="stat-grid">{cards}</div>'
+    return f'<div class="stat-strip headline-stats">{cards}</div>'
 
 
 def _hero_editorial_block(portrait, source_label: str, ai_note: str) -> str:
@@ -421,29 +561,122 @@ def _playlist_label(path: Path) -> str:
 
 
 def _playlist_choices() -> list[tuple[str, Path]]:
-    choices: list[tuple[str, Path]] = []
+    private_paths = _private_export_paths()
+    if private_paths:
+        return [
+            (_playlist_label(path), path)
+            for path in sorted(private_paths, key=lambda p: _playlist_label(p).lower())
+        ]
     if SAMPLE_CSV.exists():
-        choices.append(("Sample demo", SAMPLE_CSV))
-    if PLAYLISTS_DIR.is_dir():
-        for path in sorted(PLAYLISTS_DIR.glob("*.csv"), key=lambda p: _playlist_label(p).lower()):
-            choices.append((_playlist_label(path), path))
-    if DEFAULT_CSV.exists() and not (PLAYLISTS_DIR / "Liked_Songs.csv").exists():
-        choices.append(("Liked songs", DEFAULT_CSV))
-    return choices
+        return [("Sample playlist", SAMPLE_CSV)]
+    return []
 
 
 def _default_playlist_index(choices: list[tuple[str, Path]]) -> int:
     labels = [label.lower() for label, _ in choices]
-    for preferred in ("liked songs", "sample demo"):
+    for preferred in ("liked songs", "sample playlist"):
         if preferred in labels:
             return labels.index(preferred)
     return 0
 
 
 def _library_playlist_paths() -> list[Path]:
-    if not PLAYLISTS_DIR.is_dir():
-        return []
-    return sorted(PLAYLISTS_DIR.glob("*.csv"), key=lambda p: _playlist_label(p).lower())
+    return sorted(_private_export_paths(), key=lambda p: _playlist_label(p).lower())
+
+
+def _private_export_paths() -> list[Path]:
+    paths: list[Path] = []
+    if DEFAULT_CSV.exists():
+        paths.append(DEFAULT_CSV)
+    if PLAYLISTS_DIR.is_dir():
+        paths.extend(sorted(PLAYLISTS_DIR.glob("*.csv")))
+    return paths
+
+
+def _safe_playlist_stem(filename: str) -> str:
+    stem = Path(filename).stem
+    stem = re.sub(r"[^A-Za-z0-9]+", "_", stem).strip("_")
+    return stem[:80] or "Playlist"
+
+
+def _save_playlist_contents(filename: str, contents: bytes) -> Path:
+    """Save one validated upload without overwriting a different playlist."""
+    PLAYLISTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    stem = _safe_playlist_stem(filename)
+    candidate = PLAYLISTS_DIR / f"{stem}.csv"
+    suffix = 2
+    while candidate.exists() and candidate.read_bytes() != contents:
+        candidate = PLAYLISTS_DIR / f"{stem}_{suffix}.csv"
+        suffix += 1
+    if not candidate.exists():
+        candidate.write_bytes(contents)
+    return candidate
+
+
+def _save_uploaded_playlists(uploaded_files) -> list[Path]:
+    """Validate a batch before saving its playlists to the private library."""
+    uploads = [(uploaded.name, uploaded.getvalue()) for uploaded in uploaded_files]
+    for _filename, contents in uploads:
+        analyze(load_csv(io.BytesIO(contents)))
+    return [_save_playlist_contents(filename, contents) for filename, contents in uploads]
+
+
+def _user_data_present(nonce: int) -> bool:
+    if st.session_state.get(f"csv_upload_{nonce}"):
+        return True
+    return bool(_private_export_paths())
+
+
+def _reset_success_message(removed: int, had_upload: bool) -> str:
+    parts: list[str] = []
+    if removed:
+        parts.append("Your saved playlists have been removed.")
+    if had_upload:
+        parts.append("Your uploaded file has been cleared.")
+    if not parts:
+        return "You're back on the sample playlist."
+    return " ".join(parts) + " You're now viewing the sample playlist."
+
+
+def _execute_library_reset(had_upload: bool) -> tuple[bool, str]:
+    errors: list[str] = []
+    removed = 0
+    for path in _private_export_paths():
+        try:
+            path.unlink()
+            removed += 1
+        except OSError as exc:
+            errors.append(f"{_playlist_label(path)} ({exc})")
+
+    _cached_library_summary.clear()
+    _cached_ai_portrait.clear()
+    st.session_state.reset_nonce = st.session_state.get("reset_nonce", 0) + 1
+    st.session_state.pop("reset_confirm_pending", None)
+
+    if errors:
+        return (
+            False,
+            "Some playlists couldn't be removed. Close any open files and try again.",
+        )
+    return True, _reset_success_message(removed, had_upload)
+
+
+@st.dialog("Clear your playlists?")
+def _clear_playlists_dialog(had_upload: bool) -> None:
+    st.markdown(
+        "This removes any playlists saved on this device and clears anything you've uploaded. "
+        "The sample playlist stays available so you can keep exploring."
+    )
+    keep_col, clear_col = st.columns(2)
+    with keep_col:
+        if st.button("Keep my playlists", use_container_width=True, key="reset_dialog_keep"):
+            st.rerun()
+    with clear_col:
+        if st.button("Clear everything", type="primary", use_container_width=True, key="reset_dialog_clear"):
+            ok, message = _execute_library_reset(had_upload)
+            st.session_state.reset_status = ("success" if ok else "error", message)
+            st.rerun()
 
 
 @st.cache_data(show_spinner=False)
@@ -481,19 +714,37 @@ def _resolve_portrait(profile, source_label: str, use_ai: bool):
     ai = _cached_ai_portrait(json.dumps(brief, sort_keys=True), groq_key, ollama_model)
     if ai:
         return ai, brief
-    st.warning("AI portrait unavailable — using local template. Check API key or Ollama.")
+    st.warning("AI portrait unavailable. Showing the standard summary.")
     return portrait, brief
 
 
 def _load_profile():
+    if "reset_nonce" not in st.session_state:
+        st.session_state.reset_nonce = 0
+
+    reset_status = st.session_state.pop("reset_status", None)
+    if reset_status:
+        level, message = reset_status
+        if level == "success":
+            st.markdown(f'<p class="reset-toast">{html.escape(message)}</p>', unsafe_allow_html=True)
+        else:
+            st.error(message)
+
     choices = _playlist_choices()
     if not choices:
-        st.error("No CSV found. Add sample data or upload an Exportify CSV.")
+        st.error("Upload an Exportify CSV to get started.")
         st.stop()
 
     labels = [label for label, _ in choices]
     groq_key, ollama_model = _llm_settings()
     ai_available = llm_configured(groq_key, ollama_model)
+    nonce = st.session_state.reset_nonce
+    pending_playlist = st.session_state.pop("pending_playlist", None)
+    selected_index = (
+        labels.index(pending_playlist)
+        if pending_playlist in labels
+        else _default_playlist_index(choices)
+    )
 
     if ai_available:
         pick_col, upload_col, ai_col = st.columns([4, 4, 2])
@@ -504,29 +755,40 @@ def _load_profile():
         picked = st.selectbox(
             "Playlist",
             labels,
-            index=_default_playlist_index(choices),
+            index=selected_index,
+            key=f"playlist_pick_{nonce}",
         )
     with upload_col:
-        uploaded = st.file_uploader(
-            "Upload CSV",
+        uploaded_files = st.file_uploader(
+            "Upload playlists",
             type=["csv"],
-            help="Optional — overrides the playlist picker for this session.",
+            accept_multiple_files=True,
+            help="Save one or more Exportify CSVs to your local library.",
+            key=f"csv_upload_{nonce}",
         )
     use_ai = False
     if ai_available:
         with ai_col:
-            use_ai = st.checkbox("AI portrait", value=False)
+            use_ai = st.checkbox("AI portrait", value=False, key=f"ai_portrait_{nonce}")
 
-    if uploaded is not None:
+    if uploaded_files:
         try:
-            profile = analyze(load_csv(uploaded))
-            return profile, "Uploaded export", use_ai, True
+            paths = _save_uploaded_playlists(uploaded_files)
+            st.session_state.pending_playlist = _playlist_label(paths[0])
+            _cached_library_summary.clear()
+            count = len(paths)
+            st.session_state.reset_status = (
+                "success",
+                f"Added {count} playlist{'s' if count != 1 else ''}.",
+            )
+            st.session_state.reset_nonce = nonce + 1
+            st.rerun()
         except Exception as exc:
-            st.error(f"Could not read uploaded CSV: {exc}")
+            st.error(f"Couldn't read one or more CSV files: {exc}")
             st.stop()
 
     path = dict(choices)[picked]
-    return analyze_file(path), picked, use_ai, False
+    return analyze_file(path), picked, use_ai
 
 
 def genre_treemap(profile):
@@ -550,15 +812,16 @@ def genre_treemap(profile):
             texttemplate="%{label}<br>%{percentRoot:.0%}",
             textinfo="text",
             insidetextfont=dict(color=CREAM, size=12),
-            tiling=dict(pad=6),
+            tiling=dict(pad=11),
         )
     )
     fig.update_layout(
         height=CHART_HEIGHT,
-        margin=dict(t=12, l=8, r=8, b=8),
+        margin=dict(t=12, l=14, r=14, b=8),
         paper_bgcolor=SURFACE,
         plot_bgcolor=SURFACE,
         font=dict(color=TEXT, size=12, family="Inter, Segoe UI, system-ui, sans-serif"),
+        uniformtext=dict(minsize=10, mode="hide"),
     )
     return fig
 
@@ -568,29 +831,52 @@ def era_bar(profile):
     if buckets.empty:
         return None
 
+    eras = buckets.index.tolist()
     values = buckets.values.tolist()
-    fig = go.Figure(
-        go.Bar(
-            x=buckets.index.tolist(),
-            y=values,
-            marker=dict(
-                color=_bar_fill_with_highlight(values, CHART_LOW, CHART_HIGH, CHART_HIGHLIGHT),
-                line=dict(width=0),
-            ),
+    stem_x, stem_y = _lollipop_stems(eras, values, horizontal=False)
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=stem_x,
+            y=stem_y,
+            mode="lines",
+            line=dict(color=STRUCTURE_STEM, width=2),
+            hoverinfo="skip",
+            showlegend=False,
         )
     )
+    fig.add_trace(
+        go.Scatter(
+            x=eras,
+            y=values,
+            mode="markers+text",
+            marker=dict(
+                color=_lollipop_colors(values),
+                size=15,
+                line=dict(color=SURFACE, width=2),
+            ),
+            text=[str(value) for value in values],
+            textposition="top center",
+            textfont=dict(color=BODY_TEXT, size=11),
+            hovertemplate="%{x}: %{y} tracks<extra></extra>",
+            showlegend=False,
+        )
+    )
+    top = max(values)
     fig.update_layout(
         **_layout(
             height=STRUCTURE_CHART_HEIGHT,
-            margin=dict(t=40, l=12, r=12, b=48),
+            margin=dict(t=52, l=20, r=20, b=44),
             paper_bgcolor=SURFACE,
             plot_bgcolor=SURFACE,
             xaxis_title=None,
             yaxis_title=None,
         )
     )
-    fig.update_layout(title=dict(text="When the music was made", font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"))
-    return _apply_axes(fig)
+    fig.update_layout(title=dict(text="Release decades", font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"))
+    fig.update_xaxes(categoryorder="array", categoryarray=eras)
+    fig.update_yaxes(visible=False, range=[0, top + max(2, top * 0.18)], fixedrange=True)
+    return fig
 
 
 def top_artists_bar(profile, limit: int = 8):
@@ -598,27 +884,58 @@ def top_artists_bar(profile, limit: int = 8):
     if artists.empty:
         return None
 
+    names = artists.index.tolist()
     values = artists.values.tolist()
-    colors = _bar_fill_with_highlight(values, CHART_LOW, CHART_HIGH, CHART_HIGHLIGHT)
-    fig = go.Figure(
-        go.Bar(
+    top = max(values)
+    stem_start = max(0.12, top * 0.025)
+    stem_x, stem_y = _lollipop_stems(names, values, horizontal=True, start=stem_start)
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=stem_x,
+            y=stem_y,
+            mode="lines",
+            line=dict(color=STRUCTURE_STEM, width=2),
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
             x=values,
-            y=artists.index.tolist(),
-            orientation="h",
-            marker=dict(color=colors, line=dict(width=0)),
+            y=names,
+            mode="markers+text",
+            marker=dict(
+                color=_lollipop_colors(values),
+                size=15,
+                line=dict(color=SURFACE, width=2),
+            ),
+            text=[str(value) for value in values],
+            textposition="middle right",
+            textfont=dict(color=BODY_TEXT, size=11),
+            hovertemplate="%{y}: %{x} tracks<extra></extra>",
+            showlegend=False,
         )
     )
     fig.update_layout(
         **_layout(
             height=SMALL_CHART_HEIGHT,
-            margin=dict(t=40, l=12, r=16, b=12),
+            margin=dict(t=42, l=156, r=42, b=18),
             paper_bgcolor=SURFACE,
             plot_bgcolor=SURFACE,
         )
     )
     fig.update_layout(title=dict(text=f"Top {limit} artists", font=dict(size=13, color=CHART_TITLE), x=0, xanchor="left"))
-    fig.update_layout(yaxis=dict(automargin=True))
-    return _apply_axes(fig)
+    fig.update_xaxes(visible=False, range=[0, top + max(1, top * 0.18)], fixedrange=True)
+    fig.update_yaxes(
+        automargin=True,
+        categoryorder="array",
+        categoryarray=names,
+        fixedrange=True,
+        showgrid=False,
+        tickfont=dict(color=CHART_AXIS, size=10),
+    )
+    return fig
 
 
 st.set_page_config(
@@ -630,28 +947,43 @@ st.set_page_config(
 
 st.markdown(PAGE_CSS, unsafe_allow_html=True)
 
-profile, source_label, use_ai, from_upload = _load_profile()
+profile, source_label, use_ai = _load_profile()
 portrait, _brief = _resolve_portrait(profile, source_label, use_ai)
 
 library_paths = _library_playlist_paths()
 library_summary = ""
-if not from_upload and len(library_paths) >= 2:
+if len(library_paths) >= 2:
     path_key = tuple(str(p.resolve()) for p in library_paths)
     library_summary = _cached_library_summary(path_key)
 
 ai_note = f" · {portrait.source} portrait" if portrait.source != "template" else ""
 
+nonce = st.session_state.reset_nonce
+had_upload = bool(st.session_state.get(f"csv_upload_{nonce}"))
+show_clear = _user_data_present(nonce)
+
+hint_col, clear_col = st.columns([5.5, 1.5])
+with hint_col:
+    st.markdown(
+        '<p class="control-hint">Choose a playlist or upload '
+        '<a href="https://exportify.net" style="color:#c9925a;">Exportify</a> CSVs.</p>',
+        unsafe_allow_html=True,
+    )
+with clear_col:
+    if show_clear:
+        if st.button(
+            "Clear my playlists",
+            type="secondary",
+            help="Remove saved playlists and any uploaded file. The sample playlist stays.",
+            key=f"clear_open_{nonce}",
+        ):
+            _clear_playlists_dialog(had_upload)
+
 st.markdown(
-    '<p class="control-hint">Switch playlist above, or upload a fresh '
-    '<a href="https://exportify.net" style="color:#c9925a;">Exportify</a> CSV.</p>',
+    f'<div class="hero-block">{_hero_editorial_block(portrait, source_label, ai_note)}</div>',
     unsafe_allow_html=True,
 )
-
-hero_left, hero_right = st.columns([1.25, 0.75], gap="medium")
-with hero_left:
-    st.markdown(_hero_editorial_block(portrait, source_label, ai_note), unsafe_allow_html=True)
-with hero_right:
-    st.markdown(_primary_stat_grid(profile), unsafe_allow_html=True)
+st.markdown(_primary_stat_strip(profile), unsafe_allow_html=True)
 
 st.markdown(_mood_strip(profile), unsafe_allow_html=True)
 
@@ -670,7 +1002,7 @@ st.markdown(
 )
 genre_fig = genre_treemap(profile)
 if genre_fig is None:
-    st.warning("No genre data in this export.")
+    st.warning("This playlist has no genre tags.")
 else:
     st.plotly_chart(
         genre_fig,
@@ -683,19 +1015,19 @@ else:
 st.markdown('<p class="section-label">Structure</p>', unsafe_allow_html=True)
 artists_fig = top_artists_bar(profile)
 if artists_fig is None:
-    st.warning("No artist data in this export.")
+    st.warning("This playlist has no artist data.")
 else:
     st.plotly_chart(artists_fig, width="stretch", theme=None, config={"displayModeBar": False})
 
 era_fig = era_bar(profile)
 if era_fig is None:
-    st.warning("No release dates in this export.")
+    st.warning("This playlist has no release dates.")
 else:
     st.plotly_chart(era_fig, width="stretch", theme=None, config={"displayModeBar": False})
 
 st.markdown(
-    '<p class="footer-note">Deep-cuts index = 100 minus average Spotify popularity '
-    "(higher means deeper cuts). Built as a portfolio demo — "
-    '<a href="https://github.com/jmshall93-debug/spotify-portrait" style="color: #f97316;">source on GitHub</a>.</p>',
+    '<p class="footer-note">Deep cuts index = 100 minus average Spotify popularity '
+    '(higher means deeper cuts). '
+    '<a href="https://github.com/jmshall93-debug/spotify-portrait" style="color: #f97316;">Source on GitHub</a>.</p>',
     unsafe_allow_html=True,
 )
